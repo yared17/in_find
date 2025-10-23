@@ -34,8 +34,8 @@
     }
   </script>
 
-  <!-- EXIF -->
-  <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+  <!-- EXIF/IPTC/XMP: usa exifr (full) -->
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
 
   <style>
     .gradient-hero{
@@ -57,7 +57,7 @@
   <nav class="sticky top-0 z-50 bg-black/40 backdrop-blur border-b border-white/10">
     <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <img src="/assets/img/logo.svg" alt="Detector IA" width="24" height="24" class="w-6 h-6" fetchpriority="high" decoding="async" />
+        
         <span class="font-semibold">Detector IA</span>
       </div>
       <div class="hidden sm:flex items-center gap-6 text-sm text-white/80">
@@ -82,7 +82,7 @@
         </span>
       </h1>
       <p class="mt-6 text-white/80 max-w-3xl mx-auto">
-        Analiza los metadatos EXIF para determinar si una imagen fue tomada con una cámara real o generada/modificada por inteligencia artificial.
+        Analiza EXIF/IPTC/XMP y cabeceras binarias para estimar si una imagen proviene de cámara real, red social, editor o IA.
       </p>
       <div class="mt-8">
         <button id="openPicker" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold shadow-card">
@@ -93,7 +93,7 @@
         </button>
       </div>
       <div class="mt-6 text-sm text-white/70">
-        ✓ Analiza metadatos EXIF • ✓ Detección instantánea • ✓ 100% local
+        ✓ EXIF/IPTC/XMP • ✓ Cabeceras/segmentos • ✓ 100% local
       </div>
     </div>
   </header>
@@ -107,8 +107,12 @@
           <path stroke-width="2" d="M3 15a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4 5 5 0 0 0-5-5h-1A5 5 0 1 0 7 11H6a4 4 0 0 0-3 4z"/>
           <path stroke-width="2" d="M12 12v9m0-9l-3 3m3-3l3 3"/>
         </svg>
-        <div class="mt-4 text-white/70 text-sm">Formatos: JPG / JPEG / TIFF • Máx. 25&nbsp;MB</div>
-        <input id="fileInput" type="file" accept="image/jpeg,image/jpg,image/tiff" class="hidden" />
+        <div class="mt-4 text-white/70 text-sm">
+          Formatos: JPG / JPEG / PNG / WEBP / HEIC / TIFF • Máx. 25&nbsp;MB
+        </div>
+        <input id="fileInput" type="file"
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,image/tiff"
+          class="hidden" />
       </div>
       <div id="uploadAlert" class="mt-4 text-sm text-red-300 hidden"></div>
     </div>
@@ -193,7 +197,7 @@
         <!-- Detalle -->
         <div class="mt-5">
           <details class="bg-black/20 rounded-xl p-4 border border-white/10">
-            <summary class="cursor-pointer">Detalles Técnicos (Metadatos EXIF)</summary>
+            <summary class="cursor-pointer">Detalles Técnicos (Metadatos y Cabeceras)</summary>
             <div class="mt-3 overflow-auto max-h-64 mono text-[12px] leading-5 whitespace-pre-wrap" id="rawBox"></div>
           </details>
         </div>
@@ -214,15 +218,15 @@
     <div class="grid md:grid-cols-3 gap-6">
       <div class="bg-white/5 ring-soft rounded-2xl p-6">
         <div class="text-white/70 mb-2">1. Sube tu Imagen</div>
-        <p class="text-white/80 text-sm">Arrastra una imagen JPG/JPEG/TIFF. Se procesa localmente en tu navegador.</p>
+        <p class="text-white/80 text-sm">Procesamos localmente en tu navegador.</p>
       </div>
       <div class="bg-white/5 ring-soft rounded-2xl p-6">
-        <div class="text-white/70 mb-2">2. Análisis de Metadatos</div>
-        <p class="text-white/80 text-sm">Se extraen EXIF/IPTC/XMP (si existen) y se validan cámara, fecha, GPS y software.</p>
+        <div class="text-white/70 mb-2">2. Análisis</div>
+        <p class="text-white/80 text-sm">EXIF/IPTC/XMP + cabeceras binaras (formato, segmentos, recomprensión).</p>
       </div>
       <div class="bg-white/5 ring-soft rounded-2xl p-6">
         <div class="text-white/70 mb-2">3. Veredicto</div>
-        <p class="text-white/80 text-sm">Con base en indicadores técnicos se estima la probabilidad de modificación/IA.</p>
+        <p class="text-white/80 text-sm">Heurísticas de origen (IA/red social/cámara) y puntaje de confianza.</p>
       </div>
     </div>
   </section>
@@ -232,26 +236,28 @@
     <h2 class="text-3xl font-extrabold mb-6">Preguntas Frecuentes</h2>
     <div class="space-y-3">
       <details class="bg-white/5 ring-soft rounded-xl p-4 border border-white/10">
-        <summary class="cursor-pointer font-semibold">¿Qué son los metadatos EXIF?</summary>
-        <p class="mt-2 text-white/80 text-sm">Información embebida (cámara, fecha/hora, exposición, GPS, software). Muchas apps/IA los eliminan o reescriben.</p>
+        <summary class="cursor-pointer font-semibold">¿Qué analiza?</summary>
+        <p class="mt-2 text-white/80 text-sm">EXIF/IPTC/XMP, tipo de archivo, segmentos JPEG (JFIF/EXIF/SOF), calidad JPEG estimada, software, cámara, fecha, GPS, tamaño real y hash.</p>
       </details>
       <details class="bg-white/5 ring-soft rounded-xl p-4 border border-white/10">
-        <summary class="cursor-pointer font-semibold">¿Cómo detecta si fue generada por IA?</summary>
-        <p class="mt-2 text-white/80 text-sm">Usa heurísticas sobre presencia/ausencia y coherencia de EXIF, y pistas de software (Photoshop, Canva, CapCut, etc.).</p>
+        <summary class="cursor-pointer font-semibold">¿Cómo detecta IA?</summary>
+        <p class="mt-2 text-white/80 text-sm">Palabras clave (Midjourney/DALL·E/Stable Diffusion), ausencia de señas de cámara, recomprensión típica, software de edición y huellas de plataformas.</p>
       </details>
       <details class="bg-white/5 ring-soft rounded-xl p-4 border border-white/10">
-        <summary class="cursor-pointer font-semibold">¿Se almacenan mis imágenes?</summary>
-        <p class="mt-2 text-white/80 text-sm">No. Todo se ejecuta localmente en tu navegador.</p>
+        <summary class="cursor-pointer font-semibold">¿Privacidad?</summary>
+        <p class="mt-2 text-white/80 text-sm">Todo se ejecuta localmente. No subimos nada.</p>
       </details>
     </div>
   </section>
 
   <!-- Input oculto adicional para abrir desde el hero -->
-  <input id="hiddenFile" type="file" accept="image/jpeg,image/jpg,image/tiff" class="hidden"/>
+  <input id="hiddenFile" type="file"
+         accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,image/tiff"
+         class="hidden"/>
 
   <!-- SCRIPTS -->
   <script>
-    // ===== utilidades =====
+    /* ======= utilidades DOM ======= */
     const $ = sel => document.querySelector(sel);
     const byId = id => document.getElementById(id);
 
@@ -314,8 +320,9 @@
     function handlePickedFile(file){
       uploadAlert.classList.add('hidden');
       // Validaciones
-      if(!/image\/(jpeg|jpg|tiff)/i.test(file.type)){
-        uploadAlert.textContent = 'Formato no soportado. Usa JPG/JPEG/TIFF.';
+      const okType = /image\/(jpeg|jpg|png|webp|heic|heif|tiff)/i.test(file.type) || /\.(jpe?g|png|webp|heic|heif|tiff?)$/i.test(file.name);
+      if(!okType){
+        uploadAlert.textContent = 'Formato no soportado. Usa JPG/PNG/WEBP/HEIC/TIFF.';
         uploadAlert.classList.remove('hidden');
         return;
       }
@@ -330,7 +337,7 @@
         preview.src = fr.result;
         fileName.textContent = file.name;
         fileSize.textContent = humanSize(file.size);
-        fileType.textContent = file.type;
+        fileType.textContent = file.type || 'desconocido';
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         btnAnalyze.onclick = () => analyzeFile(file, fr.result);
@@ -372,6 +379,24 @@
       keyGrid.appendChild(item);
     }
 
+    /* ======= helpers de metadatos/heurísticas ======= */
+
+    const AI_SOFTWARE = [
+      "midjourney","dall-e","dalle","stablediffusion","stable diffusion","novelai","runway",
+      "lexica","leonardo","bing image creator","ideogram","firefly"
+    ];
+    const EDITORS = ["photoshop","lightroom","gimp","affinity","pixelmator","snapseed","vsco","canva","picsart","capcut","remini"];
+
+    const PLATFORM_HINTS = [
+      {name:"WhatsApp",  software:["whatsapp"], filename:[/^(IMG-|VID-)?\d{8}-WA\d+/i], sizes:[1040,1280,1600,2048], notes:"Recomprime JPEG, elimina EXIF y usa nombres …-WA####."},
+      {name:"Instagram", software:["instagram"], sizes:[1080,1350,1440], notes:"Recomprime y elimina EXIF con frecuencia."},
+      {name:"Facebook",  software:["facebook"], sizes:[960,2048], notes:"Recomprime y reduce metadatos."},
+      {name:"Telegram",  software:["telegram"], sizes:[1280,1920,2560], notes:"Conserva EXIF si envían como archivo."},
+      {name:"Google Photos", software:["google"], notes:"Puede reescribir Software/Exif."},
+      {name:"iPhone (Cámara)", software:["apple","iphone"], exifKeys:["Make","Model"], notes:"HEIC/JPEG con EXIF completo."},
+      {name:"Android (Cámara)", software:["android","samsung","xiaomi","huawei","pixel"], exifKeys:["Make","Model"], notes:"Suele conservar EXIF."}
+    ];
+
     function dmsToDecimal(dms, ref){
       if(!dms || !Array.isArray(dms)) return null;
       const [deg,min,sec]=dms;
@@ -391,12 +416,18 @@
     }
 
     function formatBogota(exifDate){
-      if(!exifDate || typeof exifDate!=='string') return null;
-      const parts = exifDate.split(' ');
-      if(parts.length!==2) return null;
-      const iso = parts[0].replaceAll(':','-') + 'T' + parts[1] + 'Z';
-      const d = new Date(iso);
-      if(Number.isNaN(d.getTime())) return null;
+      if(!exifDate) return null;
+      // exifr ya suele entregar Date; pero soportamos string EXIF "YYYY:MM:DD HH:mm:ss"
+      let d = exifDate;
+      if(typeof exifDate==='string'){
+        const parts = exifDate.trim().split(' ');
+        if(parts.length===2){
+          const iso = parts[0].replaceAll(':','-') + 'T' + parts[1] + 'Z';
+          const tmp = new Date(iso);
+          if(!Number.isNaN(tmp.getTime())) d = tmp;
+        }
+      }
+      if(!(d instanceof Date) || Number.isNaN(d.getTime())) return null;
       return new Intl.DateTimeFormat('es-CO',{
         year:'numeric',month:'long',day:'numeric',
         hour:'numeric',minute:'numeric',second:'numeric',
@@ -404,16 +435,109 @@
       }).format(d);
     }
 
+    async function fileHash(arrayBuffer){
+      const hash = await crypto.subtle.digest('SHA-256', arrayBuffer);
+      const bytes = Array.from(new Uint8Array(hash));
+      return bytes.map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    // Lectura binaria: tipo de archivo y segmentos JPEG + calidad aproximada
+    function parseBinary(buffer){
+      const bytes = new Uint8Array(buffer);
+      const view = new DataView(buffer);
+      const head = bytes.slice(0,16);
+      const hex = [...head].map(b=>b.toString(16).padStart(2,'0')).join(' ');
+      let type = "desconocido";
+
+      const isJPEG = bytes[0]==0xFF && bytes[1]==0xD8;
+      const isPNG  = bytes[0]==0x89 && bytes[1]==0x50 && bytes[2]==0x4E && bytes[3]==0x47;
+      const isWEBP = String.fromCharCode(...bytes.slice(0,4))==="RIFF" && String.fromCharCode(...bytes.slice(8,12))==="WEBP";
+      const isHEIC = String.fromCharCode(...bytes.slice(4,12)).includes("ftypheic") || String.fromCharCode(...bytes.slice(4,12)).includes("ftypheif") || String.fromCharCode(...bytes.slice(4,12)).includes("ftypmif1");
+      if(isJPEG) type="JPEG";
+      else if(isPNG) type="PNG";
+      else if(isWEBP) type="WEBP";
+      else if(isHEIC) type="HEIC/HEIF";
+
+      let segments=[], progressive=null, jfif=null, exif=null;
+      if(isJPEG){
+        let i=2;
+        while(i<bytes.length){
+          if(bytes[i]!==0xFF){ i++; continue; }
+          const marker = bytes[i+1];
+          if(marker===0xDA) { segments.push("SOS"); break; }
+          const len = view.getUint16(i+2);
+          segments.push("FF " + marker.toString(16).toUpperCase());
+          if(marker===0xC0) progressive=false; // SOF0 baseline
+          if(marker===0xC2) progressive=true;  // SOF2 progressive
+          if(marker===0xE0) jfif=true;
+          if(marker===0xE1) exif=true;
+          i += 2 + len;
+        }
+      }
+
+      // Calidad JPEG heurística leyendo primera tabla DQT (muy orientativa)
+      let jpegQuality=null;
+      if(isJPEG){
+        let i=2;
+        while(i<bytes.length){
+          if(bytes[i]!==0xFF){i++;continue}
+          const marker=bytes[i+1];
+          const len=view.getUint16(i+2);
+          if(marker===0xDB){
+            const q = bytes[i+4];
+            if(q<=3) jpegQuality="Muy alta (≈95-100)";
+            else if(q<=6) jpegQuality="Alta (≈90)";
+            else if(q<=12) jpegQuality="Media (≈75-85)";
+            else jpegQuality="Baja (≈50-70)";
+            break;
+          }
+          if(marker===0xDA) break;
+          i += 2 + len;
+        }
+      }
+      return {type, hexHead:hex, isJPEG, isPNG, isWEBP, isHEIC, segments, progressive, jfif, exif, jpegQuality};
+    }
+
+    function guessPlatform({meta, width, height, software, filename, binary}){
+      const hints = [];
+      const sw = (software||"").toLowerCase();
+      PLATFORM_HINTS.forEach(p=>{
+        const hitSW = p.software?.some(s=>sw.includes(s));
+        const hitFN = p.filename?.some(rx=>rx.test(filename||""));
+        const hitSize = p.sizes?.includes(width)||p.sizes?.includes(height);
+        const hitExif = p.exifKeys?.some(k=>k in meta);
+        if(hitSW||hitFN||hitSize||hitExif){
+          hints.push({platform:p.name, reason: (hitSW?"software ":"")+(hitFN?"nombre ":"")+(hitSize?"tamaño ":"")+(hitExif?"exif ":""), notes:p.notes||""});
+        }
+      });
+      const noMeta = Object.keys(meta||{}).length===0;
+      if(noMeta && binary.type==="JPEG"){
+        hints.push({platform:"Red social (genérica)", reason:"JPEG sin EXIF/IPTC/XMP", notes:"Varias plataformas eliminan metadatos."});
+      }
+      if(binary.isJPEG && binary.progressive===true){
+        hints.push({platform:"Recompresión web", reason:"JPEG progresivo", notes:"Muchos servicios exportan como progresivo."});
+      }
+      return hints;
+    }
+
+    function detectAI({meta, software, xmpDump, comment}){
+      const text = [software, xmpDump, comment].join(" ").toLowerCase();
+      let hits = AI_SOFTWARE.filter(k=>text.includes(k));
+      const creatorTool = (meta?.CreatorTool||meta?.Software||"").toLowerCase();
+      if(AI_SOFTWARE.some(k=>creatorTool.includes(k))) hits.push("creatorTool");
+      let score = 0;
+      if(hits.length>=1) score += 70;
+      if(!("Make" in meta) && !("Model" in meta) && !("LensModel" in meta) && !("DateTimeOriginal" in meta)) score += 20;
+      if(("ICCProfileName" in meta)===false && ("ColorSpace" in meta)===false) score += 5;
+      return {score: Math.min(100,score), signals: Array.from(new Set(hits))};
+    }
+
     function inferOrigins(meta){
       const text = [
         meta.Software, meta.Model, meta.Make, meta.Artist,
         meta.HostComputer, meta.ImageDescription, meta.CreatorTool
       ].map(x => (x??'')+'').join(' ').toLowerCase();
-
-      const bag=[];
-      const has = (k)=> text.includes(k);
-      const any=(...ks)=>ks.some(has);
-
+      const bag=[], has=(k)=>text.includes(k), any=(...ks)=>ks.some(has);
       if(any('photoshop','adobe')) bag.push('Photoshop');
       if(any('lightroom')) bag.push('Lightroom');
       if(any('canva')) bag.push('Canva');
@@ -426,19 +550,19 @@
       if(any('iphone','apple')) bag.push('Apple/iPhone');
       if(any('samsung','android','xiaomi','huawei','pixel')) bag.push('Android');
       if(any('nikon','canon','sony','fujifilm','panasonic','olympus','leica','pentax')) bag.push('Cámara dedicada');
-
       if (bag.length === 0) bag.push('Posible cámara directa / sin editor aparente');
       return [...new Set(bag)];
     }
 
-    function analyzeFile(file, dataURL){
+    /* ======= análisis principal ======= */
+    async function analyzeFile(file, dataURL){
       // Cerrar modal
       closeModal.click();
 
       // Mostrar resultados base
       results.classList.remove('hidden');
       resultImg.src = dataURL;
-      resultInfo.textContent = `${file.name} • ${humanSize(file.size)} • ${file.type}`;
+      resultInfo.textContent = `${file.name} • ${humanSize(file.size)} • ${file.type || 'desconocido'}`;
 
       // Reset panel
       warnings.replaceChildren();
@@ -447,110 +571,154 @@
       rawBox.textContent='';
       mapLink.replaceChildren();
 
-      const img = new Image();
-      img.onload = function(){
-        try{ EXIF.enableXmp(); }catch(e){}
-        EXIF.getData(img, function(){
-          const meta = EXIF.getAllTags(this) || {};
-          rawBox.textContent = JSON.stringify(meta,null,2);
+      // Buffer y binario
+      const arrayBuffer = await file.arrayBuffer();
+      const binary = parseBinary(arrayBuffer);
+      const hash = await fileHash(arrayBuffer);
 
-          // Aviso sin EXIF
-          if (Object.keys(meta).length < 5) {
-            addWarn('La imagen no contiene metadatos EXIF. Es común si fue comprimida por redes sociales o exportada por editores.');
-          }
+      // Dimensiones reales
+      let width=null, height=null;
+      try{
+        const bmp = await createImageBitmap(new Blob([arrayBuffer], {type:file.type||'image/*'}));
+        width = bmp.width; height = bmp.height; bmp.close?.();
+      }catch{}
 
-          // Normalización
-          const make = meta.Make || '';
-          const model = meta.Model || '';
-          const lens = meta.LensModel || '';
-          const iso = meta.ISO ?? meta.ISOSpeedRatings ?? null;
-          const exposure = asFractionOrNumber(meta.ExposureTime);
-          const fnum = asFractionOrNumber(meta.FNumber);
-          const focal = asFractionOrNumber(meta.FocalLength);
-          const dateRaw = meta.DateTimeOriginal || meta.DateTimeDigitized || meta.DateTime || '';
-          const dateBOG = formatBogota(dateRaw);
-          const lat = dmsToDecimal(meta.GPSLatitude, meta.GPSLatitudeRef);
-          const lon = dmsToDecimal(meta.GPSLongitude, meta.GPSLongitudeRef);
-          const altitude = meta.GPSAltitude;
-          const direction = meta.GPSImgDirection;
+      // EXIF/IPTC/XMP con exifr
+      let meta = {};
+      try{
+        meta = await exifr.parse(arrayBuffer, {tiff:true, xmp:true, iptc:true, icc:true, jfif:true, ihdr:true, translateValues:true}) || {};
+      }catch(e){
+        meta = {};
+      }
 
-          // Validaciones / indicadores
-          const hasCamera = !!(make || model);
-          const hasConfig = !!(iso || exposure || fnum || focal);
-          const hasDate = !!dateBOG;
-          const hasGPS = (lat!=null && lon!=null);
+      // Campos normalizados
+      const make = meta.Make || '';
+      const model = meta.Model || '';
+      const lens = meta.LensModel || '';
+      const iso = meta.ISO ?? meta.ISOSpeedRatings ?? null;
+      const exposure = asFractionOrNumber(meta.ExposureTime);
+      const fnum = asFractionOrNumber(meta.FNumber);
+      const focal = asFractionOrNumber(meta.FocalLength);
+      const dateRaw = meta.DateTimeOriginal || meta.CreateDate || meta.DateTimeDigitized || meta.ModifyDate || '';
+      const dateBOG = formatBogota(dateRaw instanceof Date ? dateRaw : String(dateRaw||''));
+      const lat = (typeof meta.latitude==='number') ? meta.latitude : dmsToDecimal(meta.GPSLatitude, meta.GPSLatitudeRef);
+      const lon = (typeof meta.longitude==='number') ? meta.longitude : dmsToDecimal(meta.GPSLongitude, meta.GPSLongitudeRef);
+      const altitude = meta.GPSAltitude ?? null;
+      const direction = meta.GPSImgDirection ?? null;
+      const colorProfile = meta.ICCProfileName || meta.ColorSpace || '—';
 
-          const sw = ((meta.Software ?? '') + ' ' + (meta.CreatorTool ?? '')).trim();
-          const swLower = sw.toLowerCase();
-          const softwareSuspicious = ['photoshop','lightroom','canva','capcut','snapseed','gimp','pixelmator','affinity'].some(s => swLower.includes(s));
+      const software = (meta.Software || meta.CreatorTool || '') + '';
+      const swLower = software.toLowerCase();
+      const softwareSuspicious = EDITORS.some(s => swLower.includes(s));
 
-          // Advertencias
-          if(!hasCamera) addWarn('No se encontró información de cámara (marca/modelo).');
-          if(!hasGPS) addWarn('No hay datos de ubicación GPS.');
-          if(!hasDate) addWarn('No se encontró fecha/hora de captura.');
-          if(!hasConfig) addWarn('No hay configuración de cámara (ISO / apertura / exposición / focal).');
-          if(softwareSuspicious) addWarn('Software de edición detectado en metadatos.');
+      // Heurísticas extra
+      const platformHints = guessPlatform({
+        meta, width, height, software, filename:file.name, binary
+      });
+      const xmpDump = meta?.xmp ? JSON.stringify(meta.xmp) : '';
+      const ai = detectAI({meta, software, xmpDump, comment: meta?.UserComment||''});
 
-          // Indicadores
-          addIndicator('Información de Cámara', hasCamera);
-          addIndicator('Datos GPS', hasGPS);
-          addIndicator('Fecha/Hora Válida (Bogotá)', hasDate);
-          addIndicator('Configuración de Cámara', hasConfig);
-          addIndicator('Software Sospechoso', !softwareSuspicious); // verde si NO es sospechoso
+      // Advertencias
+      if (Object.keys(meta).length < 5) addWarn('Imagen sin (o con muy pocos) metadatos. Es típico de redes sociales/editores.');
+      if(!make && !model) addWarn('Falta marca/modelo de cámara.');
+      if(lat==null || lon==null) addWarn('No hay datos de ubicación GPS.');
+      if(!dateBOG) addWarn('No se encontró fecha/hora de captura.');
+      if(!(iso || exposure || fnum || focal)) addWarn('No hay parámetros de captura (ISO/apertura/exposición/focal).');
+      if(softwareSuspicious) addWarn('Software de edición detectado en metadatos.');
+      if(binary.isJPEG && binary.progressive===true) addWarn('JPEG progresivo (suele indicar recomprensión web).');
 
-          // Fórmula de confianza
-          const W = { cam:30, cfg:25, date:15, gps:15, noEdit:40 };
-          let score = 0;
-          if (hasCamera) score += W.cam;
-          if (hasConfig) score += W.cfg;
-          if (hasDate) score += W.date;
-          if (hasGPS) score += W.gps;
-          if (!softwareSuspicious) score += W.noEdit;
-          score = Math.max(0, Math.min(100, score));
+      // Indicadores
+      const hasCamera = !!(make || model);
+      const hasConfig = !!(iso || exposure || fnum || focal);
+      const hasDate = !!dateBOG;
+      const hasGPS = (lat!=null && lon!=null);
 
-          // Clasificación
-          let label = 'No Concluyente';
-          let color = 'bg-yellow-500/20 text-yellow-300';
-          if (score < 45) { label = 'Imagen Modificada/IA'; color = 'bg-red-500/20 text-red-300'; }
-          if (score > 65) { label = 'Imagen Real/Auténtica'; color = 'bg-emerald-500/20 text-emerald-300'; }
-          pillText.textContent = label;
-          pillIcon.className = `w-9 h-9 rounded-full flex items-center justify-center ${color}`;
-          confPct.textContent = score + '%';
-          bar.style.width = score + '%';
+      addIndicator('Información de Cámara', hasCamera);
+      addIndicator('Parámetros de Captura', hasConfig);
+      addIndicator('Fecha/Hora válida (Bogotá)', hasDate);
+      addIndicator('Datos GPS', hasGPS);
+      addIndicator('Software de edición ausente', !softwareSuspicious);
 
-          // Datos clave
-          const cam = `${make} ${model}`.trim();
-          putKey('Cámara', cam || '—');
-          putKey('Objetivo', lens || '—');
-          if(iso!=null) putKey('ISO', iso);
-          if(exposure) putKey('Tiempo de exposición', `${exposure} s`);
-          if(fnum) putKey('Número f', `f/${fnum}`);
-          if(focal) putKey('Distancia focal', `${focal} mm`);
-          putKey('Software', sw || '—');
-          putKey('Fecha original', dateRaw || '—');
-          putKey('Fecha (Bogotá GMT-5)', dateBOG || '—');
+      // Score (ajustado)
+      const W = { cam:30, cfg:20, date:15, gps:10, noEdit:25 };
+      let score = 0;
+      if (hasCamera) score += W.cam;
+      if (hasConfig) score += W.cfg;
+      if (hasDate) score += W.date;
+      if (hasGPS) score += W.gps;
+      if (!softwareSuspicious) score += W.noEdit;
+      // penalizaciones
+      if (ai.score>=70) score = Math.max(0, score-35);
+      if (Object.keys(meta).length < 3) score = Math.max(0, score-20);
+      score = Math.max(0, Math.min(100, score));
 
-          if(lat!=null && lon!=null){
-            putKey('Latitud', lat.toFixed(6));
-            putKey('Longitud', lon.toFixed(6));
-            const a = document.createElement('a');
-            a.href = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=15/${lat}/${lon}`;
-            a.target = '_blank';
-            a.rel='noopener';
-            a.className='text-brand-300 hover:text-brand-200 underline';
-            a.textContent='Ver ubicación en OpenStreetMap';
-            mapLink.appendChild(a);
-          }
-          if(altitude!=null) putKey('Altitud', altitude + ' m');
-          if(direction!=null) putKey('Dirección', direction + '°');
+      // Clasificación
+      let label = 'No Concluyente';
+      let color = 'bg-yellow-500/20 text-yellow-300';
+      if (score < 45) { label = 'Imagen Modificada/IA'; color = 'bg-red-500/20 text-red-300'; }
+      if (score > 65) { label = 'Imagen Real/Auténtica'; color = 'bg-emerald-500/20 text-emerald-300'; }
+      pillText.textContent = label;
+      pillIcon.className = `w-9 h-9 rounded-full flex items-center justify-center ${color}`;
+      // Combina con IA si aplica
+      if(ai.score>=70) pillText.textContent += ' (Señales de IA)';
+      confPct.textContent = score + '%';
+      bar.style.width = score + '%';
 
-          // Orígenes compilados
-          const origins = inferOrigins(meta);
-          putKey('Pistas de Origen', origins.join(', '));
-        });
+      // Datos clave
+      const cam = `${make} ${model}`.trim();
+      putKey('Cámara', cam || '—');
+      putKey('Objetivo', lens || '—');
+      if(width && height) putKey('Dimensiones', `${width} × ${height}px`);
+      if(iso!=null) putKey('ISO', iso);
+      if(exposure) putKey('Tiempo de exposición', `${exposure} s`);
+      if(fnum) putKey('Número f', `f/${fnum}`);
+      if(focal) putKey('Distancia focal', `${focal} mm`);
+      putKey('Software', software || '—');
+      putKey('Perfil de color', colorProfile);
+      putKey('Formato', binary.type + (binary.progressive===true? ' (progresivo)': (binary.progressive===false?' (baseline)':'')));
+      if(binary.jpegQuality) putKey('Calidad JPEG (aprox.)', binary.jpegQuality);
+      putKey('Hash (SHA-256)', `<span class="mono">${(await fileHash(arrayBuffer)).slice(0,16)}…</span>`);
+      putKey('Fecha original', (dateRaw instanceof Date)? dateRaw.toISOString() : (String(dateRaw||'—')));
+      putKey('Fecha (Bogotá GMT-5)', dateBOG || '—');
+
+      if(lat!=null && lon!=null){
+        putKey('Latitud', lat.toFixed(6));
+        putKey('Longitud', lon.toFixed(6));
+        const a = document.createElement('a');
+        a.href = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=15/${lat}/${lon}`;
+        a.target = '_blank';
+        a.rel='noopener';
+        a.className='text-brand-300 hover:text-brand-200 underline';
+        a.textContent='Ver ubicación en OpenStreetMap';
+        mapLink.appendChild(a);
+      }
+      if(altitude!=null) putKey('Altitud', altitude + ' m');
+      if(direction!=null) putKey('Dirección', direction + '°');
+
+      const origins = inferOrigins(meta);
+      putKey('Pistas de Origen', origins.join(', '));
+
+      // Plataforma probable
+      if(platformHints.length){
+        putKey('Plataforma probable', platformHints.map(h=>`${h.platform} (${h.reason.trim()})`).join(' · '));
+      }
+
+      // Dump técnico
+      const dump = {
+        _archivo: { nombre:file.name, tipo:file.type||'desconocido', bytes:file.size },
+        _dimensiones: { width, height },
+        _binario: { tipo:binary.type, cabecera_16b:binary.hexHead, segmentosJPEG:binary.segments, progresivo:binary.progressive, JFIF:binary.jfif, EXIF:binary.exif, calidadJPEG:binary.jpegQuality },
+        _ai: { score: ai.score, señales: ai.signals },
+        _plataforma: platformHints,
+        exif_iptc_xmp: meta
       };
-      img.src = dataURL;
+      rawBox.textContent = JSON.stringify(dump, null, 2);
+
+      // Render final
+      resultInfo.innerHTML = `${file.name} • ${humanSize(file.size)} • ${file.type || 'desconocido'}`;
     }
+
   </script>
 </body>
 </html>
+
